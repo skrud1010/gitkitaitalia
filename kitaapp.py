@@ -158,5 +158,9 @@ ax.set_ylabel(metric, fontproperties=font_prop if font_prop else None, fontsize=
 
 ax.grid(True, linestyle="--", alpha=0.3)
 
-# 스트림릿이 화면 크기에 맞춰 강제로 늘리는 것을 방지합니다.
-st.pyplot(fig, use_container_width=False)
+# 화면을 1:3:1 비율로 3개의 칸으로 나눕니다. (좌측여백, 중앙그래프, 우측여백)
+col1, col2, col3 = st.columns([1, 3, 1])
+
+# 가운데 칸(col2)에만 그래프를 그려서 가운데 정렬 효과를 냅니다.
+with col2:
+    st.pyplot(fig, use_container_width=False)
