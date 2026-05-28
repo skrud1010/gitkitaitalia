@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import os
 
-# 1. Font setup
+# 1. Font setup (Handles Korean breakages in matplotlib)
 @st.cache_resource
 def setup_font():
     font_path = "NanumGothic.ttf"
@@ -57,7 +57,7 @@ st.set_page_config(
 )
 
 # -------------------------------
-# 4. Custom CSS 
+# 4. Custom CSS (Adaptive Theme Colors)
 # -------------------------------
 st.markdown(
     """
@@ -65,31 +65,34 @@ st.markdown(
     .main-title {
         font-size: 40px;
         font-weight: 800;
-        color: #FFFFFF;
+        color: var(--text-color); /* Automatically adapts to Light/Dark Mode */
     }
     .sub-title {
         font-size: 20px;
-        color: #FFFFFF;
+        color: var(--text-color); /* Automatically adapts to Light/Dark Mode */
+        opacity: 0.85;
         margin-bottom: 30px;
     }
     .metric-box {
         padding: 15px;
         border-radius: 10px;
-        background-color: #F8F9FA;
+        background-color: var(--background-color);
         border-left: 6px solid #008C45;
+        color: var(--text-color);
     }
     </style>
     """,
     unsafe_allow_html=True
 )
 
+# Italy/Korea 국가명 색상도 양쪽 모드에서 모두 잘 보이는 톤으로 미세 조정
 st.markdown(
     """
     <div class="main-title">
         💱
-        <span style="color:#006400;">Italy</span>
+        <span style="color:#009246;">Italy</span>
         –
-        <span style="color:#000080;">Korea</span>
+        <span style="color:#0A549E;">Korea</span>
         Trade Statistics Dashboard
         📊
     </div>
@@ -98,7 +101,7 @@ st.markdown(
 )
 
 # -------------------------------
-# 5. Main Title
+# 5. Main Title & Subtitle
 # -------------------------------
 st.markdown(
     '<div class="sub-title">K-stat Based Annual Export/Import & Trade Balance Trend Analysis</div>',
@@ -121,51 +124,41 @@ metric = st.selectbox(
 )
 
 # -------------------------------
-# 8. Visualization 
+# 6. Visualization (Fills the screen)
 # -------------------------------
-# 그래프 크기 50% 축소 (기존 10, 5 -> 5, 2.5)
-fig, ax = plt.subplots(figsize=(5, 2.5))
+# 화면에 꽉 차도록 대형 사이즈로 복원 (가로 11.5, 세로 5)
+fig, ax = plt.subplots(figsize=(11.5, 5))
 
 years = df["Year"].values
 values = df[metric].values
 
 for i in range(len(values) - 1):
     if values[i + 1] >= values[i]:
-        color = "#CD212A"  
+        color = "#CD212A"  # Increase
     else:
-        color = "#008C45"  
+        color = "#008C45"  # Decrease
 
     ax.plot(
         years[i:i+2],
         values[i:i+2],
         color=color,
-        linewidth=3,
-        marker="o"
+        linewidth=3.5,
+        marker="o",
+        markersize=6
     )
 
-# 그래프 텍스트 및 축 색상 변경 (다크 모드 호환)
+# 고정 세팅(color='white')을 지워 라이트/다크 모드에 글자색이 자동 대응되도록 변경
 ax.set_title(
     f"Annual {metric} Trend (Korea–Italy)",
     fontproperties=font_prop if font_prop else None,
-    fontsize=12,
-    color="white",
+    fontsize=15,
     pad=15
 )
 
-ax.set_xlabel("Year", fontproperties=font_prop if font_prop else None, color="white")
-ax.set_ylabel(metric, fontproperties=font_prop if font_prop else None, color="white")
+ax.set_xlabel("Year", fontproperties=font_prop if font_prop else None, fontsize=11)
+ax.set_ylabel(metric, fontproperties=font_prop if font_prop else None, fontsize=11)
 
-ax.tick_params(axis='x', colors='white')
-ax.tick_params(axis='y', colors='white')
+ax.grid(True, linestyle="--", alpha=0.3)
 
-# 그래프 배경 투명화
-fig.patch.set_alpha(0.0)
-ax.patch.set_alpha(0.0)
-
-ax.grid(True, linestyle="--", alpha=0.4, color="gray")
-
-# 화면 가운데 정렬을 위한 컬럼 분할
-col1, col2, col3 = st.columns([1, 2, 1])
-
-with col2:
-    st.pyplot(fig)
+# 양옆 여백을 주는 컬럼 레이아웃을 제거하여 전체 화면을 꽉 채우도록 수정
+st.pyplot(fig)
