@@ -89,12 +89,10 @@ st.markdown(
 st.markdown(
     """
     <div class="main-title">
-        💱
         <span style="color:#009246;">Italy</span>
         –
         <span style="color:#0A549E;">Korea</span>
         Trade Statistics Dashboard
-        📊
     </div>
     """,
     unsafe_allow_html=True
@@ -116,7 +114,7 @@ if st.sidebar.checkbox("View Raw Data"):
     st.dataframe(df)
 
 # Analysis Target Selection
-st.subheader("📈 Annual Trade Indicator Trends")
+st.subheader("Annual Trade Indicator Trends")
 
 metric = st.selectbox(
     "Select an indicator to analyze",
@@ -124,10 +122,10 @@ metric = st.selectbox(
 )
 
 # -------------------------------
-# 6. Visualization (Fills the screen)
+# 6. Visualization 
 # -------------------------------
-# 화면에 꽉 차도록 대형 사이즈로 복원 (가로 11.5, 세로 5)
-fig, ax = plt.subplots(figsize=(11.5, 5))
+# 기존 크기 (11.5, 5)에서 20% 줄인 비율 (9.2, 4)로 수정
+fig, ax = plt.subplots(figsize=(9.2, 4))
 
 years = df["Year"].values
 values = df[metric].values
@@ -147,7 +145,7 @@ for i in range(len(values) - 1):
         markersize=6
     )
 
-# 고정 세팅(color='white')을 지워 라이트/다크 모드에 글자색이 자동 대응되도록 변경
+# 라이트/다크 모드 자동 글자색 대응
 ax.set_title(
     f"Annual {metric} Trend (Korea–Italy)",
     fontproperties=font_prop if font_prop else None,
@@ -160,5 +158,4 @@ ax.set_ylabel(metric, fontproperties=font_prop if font_prop else None, fontsize=
 
 ax.grid(True, linestyle="--", alpha=0.3)
 
-# 양옆 여백을 주는 컬럼 레이아웃을 제거하여 전체 화면을 꽉 채우도록 수정
 st.pyplot(fig)
