@@ -124,8 +124,8 @@ metric = st.selectbox(
 # -------------------------------
 # 6. Visualization 
 # -------------------------------
-# 기존 크기 (11.5, 5)에서 20% 줄인 비율 (9.2, 4)로 수정
-fig, ax = plt.subplots(figsize=(9.2, 4))
+# 기존 크기 (11.5, 5)에서 40% 줄인 비율 (6.9, 3)로 수정
+fig, ax = plt.subplots(figsize=(6.9, 3))
 
 years = df["Year"].values
 values = df[metric].values
