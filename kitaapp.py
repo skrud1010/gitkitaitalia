@@ -158,4 +158,5 @@ ax.set_ylabel(metric, fontproperties=font_prop if font_prop else None, fontsize=
 
 ax.grid(True, linestyle="--", alpha=0.3)
 
-st.pyplot(fig)
+# 스트림릿이 화면 크기에 맞춰 강제로 늘리는 것을 방지합니다.
+st.pyplot(fig, use_container_width=False)
