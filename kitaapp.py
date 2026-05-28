@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.font_manager as fm
 import os
 
-# 1. 한글 폰트 설정
+# 1. Font setup
 @st.cache_resource
 def setup_font():
     font_path = "NanumGothic.ttf"
@@ -17,28 +17,38 @@ def setup_font():
 
 font_prop = setup_font()
 
-# 2. 데이터 불러오기
+# 2. Load Data
 @st.cache_data
 def load_data():
     file_path = "K-stat 무역통계 - 한국무역협회.csv"
     df = pd.read_csv(file_path, encoding="cp949")
 
-    # 연도 정리 ("2025년" → 2025)
+    # Clean Year ("2025년" → 2025)
     df["년"] = df["년"].str.replace("년", "").astype(int)
 
-    # 숫자 컬럼 쉼표 제거 후 숫자형 변환
+    # Remove commas and convert to float
     num_cols = [
         "수출금액", "수출중량", "수입금액", "수입중량", "수지"
     ]
     for col in num_cols:
-        df[col] = df[col].str.replace(",", "").astype(float)
+        df[col] = df[col].astype(str).str.replace(",", "").astype(float)
+        
+    # Translate columns to English
+    df.rename(columns={
+        "년": "Year",
+        "수출금액": "Export Value",
+        "수입금액": "Import Value",
+        "수지": "Trade Balance",
+        "수출중량": "Export Weight",
+        "수입중량": "Import Weight"
+    }, inplace=True)
 
     return df
 
 df = load_data()
 
 # -------------------------------
-# 3. 페이지 기본 설정
+# 3. Page Config
 # -------------------------------
 st.set_page_config(
     page_title="Italy–Korea Trade Dashboard",
@@ -47,7 +57,7 @@ st.set_page_config(
 )
 
 # -------------------------------
-# 4. 커스텀 CSS (이탈리아 테마)
+# 4. Custom CSS 
 # -------------------------------
 st.markdown(
     """
@@ -59,7 +69,7 @@ st.markdown(
     }
     .sub-title {
         font-size: 20px;
-        color: #F1F1F1;
+        color: #FFFFFF;
         margin-bottom: 30px;
     }
     .metric-box {
@@ -72,63 +82,58 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
+
 st.markdown(
     """
     <div class="main-title">
         💱
-        <span style="color:#006400;">이탈</span>
-        <span style="color:#800000;">리아</span>
+        <span style="color:#006400;">Italy</span>
         –
-        <span style="color:#000080;">한</span>
-        <span style="color:#800000;">국</span>
-        무역통계 대시보드
+        <span style="color:#000080;">Korea</span>
+        Trade Statistics Dashboard
         📊
     </div>
     """,
     unsafe_allow_html=True
 )
 
-
 # -------------------------------
-# 5. 메인 타이틀
+# 5. Main Title
 # -------------------------------
 st.markdown(
-    '<div class="sub-title">K-stat 기반 연도별 수출입·무역수지 추이 분석</div>',
+    '<div class="sub-title">K-stat Based Annual Export/Import & Trade Balance Trend Analysis</div>',
     unsafe_allow_html=True
 )
 
+# Sidebar
+st.sidebar.header("Filter Settings")
 
-# 사이드바
-st.sidebar.header("필터 설정")
-
-if st.sidebar.checkbox("데이터 원본 보기"):
+if st.sidebar.checkbox("View Raw Data"):
     st.subheader("Raw Data")
     st.dataframe(df)
 
-# 분석 대상 선택
-st.subheader("📈 연도별 무역 지표 추이")
+# Analysis Target Selection
+st.subheader("📈 Annual Trade Indicator Trends")
 
 metric = st.selectbox(
-    "분석할 지표를 선택하세요",
-    ["수출금액", "수입금액", "수지", "수출중량", "수입중량"]
+    "Select an indicator to analyze",
+    ["Export Value", "Import Value", "Trade Balance", "Export Weight", "Import Weight"]
 )
 
 # -------------------------------
-# 8. 시각화 (증가/감소 색상 분기)
+# 8. Visualization 
 # -------------------------------
-fig, ax = plt.subplots(figsize=(10, 5))
+# 그래프 크기 50% 축소 (기존 10, 5 -> 5, 2.5)
+fig, ax = plt.subplots(figsize=(5, 2.5))
 
-# 배경색 설정 (이탈리아 레드)
-
-
-years = df["년"].values
+years = df["Year"].values
 values = df[metric].values
 
 for i in range(len(values) - 1):
     if values[i + 1] >= values[i]:
-        color = "#CD212A"  # 감소 → Red 
+        color = "#CD212A"  
     else:
-        color = "#008C45"  # 증가 → Green
+        color = "#008C45"  
 
     ax.plot(
         years[i:i+2],
@@ -138,17 +143,29 @@ for i in range(len(values) - 1):
         marker="o"
     )
 
+# 그래프 텍스트 및 축 색상 변경 (다크 모드 호환)
 ax.set_title(
-    f"연도별 {metric} 추이 (Korea–Italy)",
-    fontproperties=font_prop,
-    fontsize=16,
-    color="black",
+    f"Annual {metric} Trend (Korea–Italy)",
+    fontproperties=font_prop if font_prop else None,
+    fontsize=12,
+    color="white",
     pad=15
 )
 
-ax.set_xlabel("연도", fontproperties=font_prop)
-ax.set_ylabel(metric, fontproperties=font_prop)
+ax.set_xlabel("Year", fontproperties=font_prop if font_prop else None, color="white")
+ax.set_ylabel(metric, fontproperties=font_prop if font_prop else None, color="white")
 
-ax.grid(True, linestyle="--", alpha=0.4)
+ax.tick_params(axis='x', colors='white')
+ax.tick_params(axis='y', colors='white')
 
-st.pyplot(fig)
+# 그래프 배경 투명화
+fig.patch.set_alpha(0.0)
+ax.patch.set_alpha(0.0)
+
+ax.grid(True, linestyle="--", alpha=0.4, color="gray")
+
+# 화면 가운데 정렬을 위한 컬럼 분할
+col1, col2, col3 = st.columns([1, 2, 1])
+
+with col2:
+    st.pyplot(fig)
